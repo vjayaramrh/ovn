@@ -1,9 +1,20 @@
-FROM ubuntu:16.04
+FROM ubuntu:20.04
 MAINTAINER "Aliasgar Ginwala" <aginwala@ebay.com>
 
 ARG OVN_BRANCH
 ARG GITHUB_SRC
 ARG DISTRO
+
+RUN truncate -s0 /tmp/preseed.cfg && \
+       (echo "tzdata tzdata/Areas select America" >> /tmp/preseed.cfg) && \
+       (echo "tzdata tzdata/Zones/America select Los_Angeles" >> /tmp/preseed.cfg) && \
+       debconf-set-selections /tmp/preseed.cfg && \
+       rm -f /etc/timezone /etc/localtime && \
+       apt-get update && \
+       DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
+       apt-get install -y tzdata
+
+RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 copy $DISTRO/build.sh /build.sh
 copy install_ovn.sh /install_ovn.sh
